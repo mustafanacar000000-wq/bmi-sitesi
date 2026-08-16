@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vücut Kitle İndeksi Hesaplama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --murekkep: #14312E;
+      --kagit:    #F2EFE6;
+      --amber:    #D99A2B;
+      --yesil:    #4E8C6A;
+      --kiremit:  #C0563A;
+      --sis:      rgba(242, 239, 230, 0.55);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--murekkep);
+      color: var(--kagit);
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .panel { width: 100%; max-width: 460px; }
+
+    .eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--sis);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--sis);
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(242, 239, 230, 0.3);
+      color: var(--kagit);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 26px;
+      padding: 6px 0 10px;
+      margin-bottom: 22px;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-bottom-color: var(--amber);
+    }
+
+    button {
+      width: 100%;
+      background: var(--amber);
+      color: var(--murekkep);
+      border: none;
+      border-radius: 2px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 15px;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: filter 0.15s;
+    }
+
+    button:hover { filter: brightness(1.1); }
+    button:focus-visible { outline: 2px solid var(--kagit); outline-offset: 3px; }
+
+    .hata {
+      border-left: 2px solid var(--kiremit);
+      padding-left: 12px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: var(--kiremit);
+    }
+
+    .sonuc {
+      margin-top: 36px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(242, 239, 230, 0.15);
+    }
+
+    .deger {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 68px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .baslik {
+      font-size: 19px;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+
+    .baslik.dusuk      { color: var(--amber); }
+    .baslik.normal     { color: var(--yesil); }
+    .baslik.yuksek     { color: var(--amber); }
+    .baslik.cok-yuksek { color: var(--kiremit); }
+
+    .mesaj {
+      font-size: 15px;
+      color: var(--sis);
+      margin-top: 10px;
+    }
+
+    /* Ölçek çubuğu — 15'ten 40'a kadar olan aralığı gösterir */
+    .olcek {
+      position: relative;
+      height: 6px;
+      border-radius: 3px;
+      margin: 32px 0 10px;
+      background: linear-gradient(
+        to right,
+        var(--amber)   0%,  14%,
+        var(--yesil)  14%,  40%,
+        var(--amber)  40%,  60%,
+        var(--kiremit) 60%, 100%
+      );
+    }
+
+    .isaretci {
+      position: absolute;
+      top: -7px;
+      width: 3px;
+      height: 20px;
+      background: var(--kagit);
+      border-radius: 2px;
+      transform: translateX(-50%);
+    }
+
+    .olcek-etiket {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--sis);
+    }
+
+    .not {
+      font-size: 12px;
+      color: var(--sis);
+      margin-top: 26px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <p class="eyebrow">Vücut Kitle İndeksi</p>
+    <h1>Boyunuza göre kilonuz nerede duruyor?</h1>
+
+    {% if hata %}
+      <p class="hata">{{ hata }}</p>
+    {% endif %}
+
+    <form method="POST">
+      <label for="kilo">Kilo — kg</label>
+      <input type="text" id="kilo" name="kilo" value="{{ kilo_girilen }}" placeholder="72,5" required>
+
+      <label for="boy">Boy — cm</label>
+      <input type="text" id="boy" name="boy" value="{{ boy_girilen }}" placeholder="178" required>
+
+      <button type="submit">Hesapla</button>
+    </form>
+
+    {% if sonuc %}
+      <section class="sonuc">
+        <p class="deger">{{ sonuc.bmi }}</p>
+        <p class="baslik {{ sonuc.renk }}">{{ sonuc.baslik }}</p>
+        <p class="mesaj">{{ sonuc.mesaj }}</p>
+
+        <div class="olcek">
+          <div class="isaretci" style="left: {{ sonuc.konum }}%"></div>
+        </div>
+        <div class="olcek-etiket">
+          <span>15</span><span>18,5</span><span>25</span><span>30</span><span>40</span>
+        </div>
+      </section>
+    {% endif %}
+
+    <p class="not">
+      Vücut kitle indeksi kaba bir ölçüdür; kas kütlesini, yaşı ve vücut yapısını
+      hesaba katmaz. Sporcularda ve yaşlılarda yanıltıcı olabilir. Tıbbi bir teşhis
+      değildir — sağlığınıza dair kararlar için bir hekime danışın.
+    </p>
+  </main>
+</body>
+</html>
